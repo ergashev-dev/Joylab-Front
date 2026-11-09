@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useCompareIds } from '../lib/compare'
+import VerifyBanner from './VerifyBanner'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { initials } from '../lib/format'
@@ -210,6 +211,7 @@ export default function Layout() {
         transition={{ duration: 0.6, ease: EASE_OUT }}
       >
         <Suspense fallback={<Spinner />}>
+          <VerifyBanner />
           <Outlet />
         </Suspense>
       </motion.main>

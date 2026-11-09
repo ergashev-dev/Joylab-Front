@@ -12,6 +12,8 @@ export const EMPTY_FORM = {
   area: '',
   rooms: '',
   bathrooms: '1',
+  lat: '',
+  lng: '',
 }
 
 export function formFromProperty(p) {
@@ -27,6 +29,8 @@ export function formFromProperty(p) {
     area: String(p.area ?? ''),
     rooms: String(p.rooms ?? ''),
     bathrooms: String(p.bathrooms ?? ''),
+    lat: p.lat === null || p.lat === undefined ? '' : String(p.lat),
+    lng: p.lng === null || p.lng === undefined ? '' : String(p.lng),
   }
 }
 
@@ -67,6 +71,8 @@ export function buildBody(f) {
     area: toNumber(f.area),
     rooms: Number(f.rooms),
     bathrooms: Number(f.bathrooms),
+    lat: f.lat !== '' && f.lng !== '' ? Number(f.lat) : null,
+    lng: f.lat !== '' && f.lng !== '' ? Number(f.lng) : null,
   }
 }
 

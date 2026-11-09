@@ -52,7 +52,7 @@ export default function FilterForm({ values, categories, onChange, idPrefix = 'f
 
   function clearAll() {
     clearTimeout(timer.current)
-    const next = { ...EMPTY_FILTERS, sort: latest.current.sort }
+    const next = { ...EMPTY_FILTERS, sort: latest.current.sort, view: latest.current.view }
     latest.current = next
     setDraft(next)
     commit(next)

@@ -4,6 +4,8 @@ export const api = {
   register: (body) => request('/auth/register', { method: 'POST', body, auth: false }),
   login: (body) => request('/auth/login', { method: 'POST', body, auth: false }),
   me: (signal) => request('/auth/me', { signal }),
+  verifyEmail: (token) => request('/auth/verify-email', { method: 'POST', body: { token }, auth: false }),
+  resendVerification: () => request('/auth/resend-verification', { method: 'POST' }),
 
   categories: (signal) => request('/categories', { signal, auth: false }),
 

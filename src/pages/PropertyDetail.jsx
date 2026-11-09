@@ -4,6 +4,7 @@ import Gallery from '../components/Gallery'
 import HeartButton from '../components/HeartButton'
 import { AreaIcon, BathIcon, BedIcon, CalendarIcon, MailIcon, PhoneIcon, PinIcon, TagIcon } from '../components/Icons'
 import CompareButton from '../components/CompareButton'
+import { StaticMap } from '../components/LazyMaps'
 import InquiryForm from '../components/InquiryForm'
 import ReportButton from '../components/ReportButton'
 import SimilarList from '../components/SimilarList'
@@ -103,6 +104,18 @@ export default function PropertyDetail() {
             <h2>Tavsif</h2>
             <p className="prose">{p.description}</p>
           </section>
+
+          {p.lat !== null && p.lat !== undefined && p.lng !== null && p.lng !== undefined ? (
+            <section className="detail__section">
+              <h2>Xaritada</h2>
+              <StaticMap lat={p.lat} lng={p.lng} />
+              <p className="muted">
+                <a href={`https://www.openstreetmap.org/?mlat=${p.lat}&mlon=${p.lng}#map=16/${p.lat}/${p.lng}`} target="_blank" rel="noopener noreferrer">
+                  Katta xaritada ochish
+                </a>
+              </p>
+            </section>
+          ) : null}
 
           <p className="detail__date">
             <CalendarIcon size={16} /> E'lon joylangan sana: {formatDate(p.createdAt)}

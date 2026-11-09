@@ -12,6 +12,7 @@ import Properties from './pages/Properties'
 import PropertyDetail from './pages/PropertyDetail'
 import Register from './pages/Register'
 import Compare from './pages/Compare'
+import VerifyEmail from './pages/VerifyEmail'
 
 // Admin va sotuvchi sahifalari alohida yuklanadi: oddiy tashrif buyuruvchi ularni yuklamaydi
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
@@ -31,6 +32,7 @@ export default function App() {
         <Route path="properties" element={<Properties />} />
         <Route path="properties/:id" element={<PropertyDetail />} />
         <Route path="compare" element={<Compare />} />
+        <Route path="verify-email" element={<VerifyEmail />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route

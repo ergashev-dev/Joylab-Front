@@ -12,11 +12,14 @@ import { useAsync } from '../hooks/useAsync'
 import { useCategories } from '../hooks/useCategories'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { activeFilterCount, filtersFromParams, pageFromParams, paramsFromFilters } from '../lib/filters'
+import { activeFilterCount, apiQueryFromFilters, filtersFromParams, pageFromParams, paramsFromFilters } from '../lib/filters'
+import { isCoord } from '../lib/geo'
+import { ListingMap } from '../components/LazyMaps'
 import { formatNumber } from '../lib/format'
 
 function chipsFor(f, categories) {
   const out = []
+  if (f.bbox) out.push({ key: 'bbox', label: 'Xarita hududi' })
   if (f.q) out.push({ key: 'q', label: `«${f.q}»` })
   if (f.city) out.push({ key: 'city', label: f.city })
   if (f.type) out.push({ key: 'type', label: f.type === 'RENT' ? 'Ijara' : 'Sotuv' })
@@ -39,7 +42,13 @@ export default function Properties() {
   const page = pageFromParams(searchParams)
 
   const { data, error, loading, reload } = useAsync(
-    (signal) => api.properties({ ...paramsFromFilters(filters), page, limit: PAGE_SIZE }, signal),
+    (signal) =>
+      api.properties(
+        filters.view === 'map'
+          ? { ...apiQueryFromFilters(filters), page: 1, limit: 50 }
+          : { ...apiQueryFromFilters(filters), page, limit: PAGE_SIZE },
+        signal,
+      ),
     [queryKey],
     { keepPrevious: true },
   )
@@ -69,6 +78,8 @@ export default function Properties() {
 
   const items = data?.data || []
   const meta = data?.meta
+  const mapMode = filters.view === 'map'
+  const onMap = items.filter((x) => isCoord(x.lat, x.lng)).length
   const activeCount = activeFilterCount(filters)
   const firstLoad = loading && !data
 
@@ -121,6 +132,14 @@ export default function Properties() {
             ) : (
               <span />
             )}
+            <div className="viewtoggle" role="group" aria-label="Ko'rinish">
+              <button type="button" aria-pressed={!mapMode} onClick={() => applyFilters({ ...filters, view: '' })}>
+                Ro'yxat
+              </button>
+              <button type="button" aria-pressed={mapMode} onClick={() => applyFilters({ ...filters, view: 'map' })}>
+                Xarita
+              </button>
+            </div>
             <div className="toolbar__sort">
               <label htmlFor="sort" className="sr-only">
                 Saralash
@@ -129,7 +148,15 @@ export default function Properties() {
             </div>
           </div>
 
-          {error && !data ? (
+          {mapMode && data ? (
+            <>
+              <ListingMap items={items} searching={loading} onSearchArea={(bbox) => applyFilters({ ...filters, bbox })} />
+              <p className="muted mapnote" aria-live="polite">
+                {meta?.total > 50 ? `Birinchi 50 ta e'lon ko'rsatilmoqda (jami ${meta.total}). ` : ''}
+                {onMap} ta e'lon xaritada. Joylashuvi ko'rsatilmagan e'lonlar faqat ro'yxatda chiqadi.
+              </p>
+            </>
+          ) : error && !data ? (
             <ErrorState error={error} onRetry={reload} />
           ) : firstLoad ? (
             <CardGrid>
@@ -137,7 +164,7 @@ export default function Properties() {
                 <CardSkeleton key={i} />
               ))}
             </CardGrid>
-          ) : items.length === 0 ? (
+          ) : mapMode ? null : items.length === 0 ? (
             activeCount > 0 ? (
               <EmptyState
                 title="Mos e'lon topilmadi"

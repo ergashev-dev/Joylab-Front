@@ -49,12 +49,21 @@ export function AuthProvider({ children }) {
     [login],
   )
 
+  // Email tasdiqlangach userni yangilaymiz (banner yo'qolsin)
+  const refreshUser = useCallback(async () => {
+    try {
+      setUser(await api.me())
+    } catch {
+      /* 401 bo'lsa onUnauthorized o'zi tozalaydi */
+    }
+  }, [])
+
   const logout = useCallback(() => {
     tokenStore.clear()
     setUser(null)
   }, [])
 
-  const value = useMemo(() => ({ user, ready, login, register, logout }), [user, ready, login, register, logout])
+  const value = useMemo(() => ({ user, ready, login, register, logout, refreshUser }), [user, ready, login, register, logout, refreshUser])
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 

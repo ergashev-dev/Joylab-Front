@@ -17,6 +17,7 @@ import {
   PinIcon,
   PlusIcon,
 } from '../components/Icons'
+import { MapPicker } from '../components/LazyMaps'
 import Placeholder from '../components/Placeholder'
 import Select from '../components/Select'
 import { BackLink, EmptyState, ErrorState, Spinner } from '../components/States'
@@ -476,6 +477,24 @@ function EditorForm({ property }) {
                     aria-describedby={errors.address ? 'p-address-err' : undefined}
                   />
                 </Field>
+                <div className="field">
+                  <span className="field__label">Xaritada joylashuv (ixtiyoriy)</span>
+                  <p className="muted">Xaritani bosib nuqta qo'ying, kerak bo'lsa sudrab siljiting. Xaridorlar e'loningizni xaritada ko'radi.</p>
+                  <MapPicker
+                    lat={form.lat}
+                    lng={form.lng}
+                    city={form.city}
+                    onChange={(la, ln) => {
+                      setValue('lat', String(Number(la.toFixed(6))))
+                      setValue('lng', String(Number(ln.toFixed(6))))
+                    }}
+                  />
+                  {form.lat !== '' ? (
+                    <button type="button" className="linkbtn" onClick={() => { setValue('lat', ''); setValue('lng', '') }}>
+                      Nuqtani o'chirish
+                    </button>
+                  ) : null}
+                </div>
               </>
             ) : null}
 

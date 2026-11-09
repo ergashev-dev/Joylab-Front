@@ -1,6 +1,9 @@
 import { SORT_OPTIONS } from '../config'
+import { parseBbox } from './geo'
 
 export const EMPTY_FILTERS = {
+  view: '',
+  bbox: '',
   q: '',
   city: '',
   type: '',
@@ -22,6 +25,8 @@ export function filtersFromParams(sp) {
   const type = get('type')
   const sort = get('sort')
   return {
+    view: get('view') === 'map' ? 'map' : '',
+    bbox: parseBbox(get('bbox')) ? get('bbox') : '',
     q: get('q').slice(0, 100),
     city: get('city'),
     type: type === 'SALE' || type === 'RENT' ? type : '',
@@ -56,5 +61,14 @@ export function priceRangeInvalid(f) {
 }
 
 export function activeFilterCount(f) {
-  return ['q', 'city', 'type', 'category', 'minPrice', 'maxPrice', 'rooms'].filter((k) => f[k] !== '').length
+  return ['q', 'bbox', 'city', 'type', 'category', 'minPrice', 'maxPrice', 'rooms'].filter((k) => f[k] !== '').length
+}
+
+/** Backend'ga faqat u biladigan parametrlar ketadi (ortiqcha kalit 400 beradi). */
+export function apiQueryFromFilters(filters) {
+  const { view, bbox, ...rest } = paramsFromFilters(filters)
+  const out = { ...rest }
+  const b = parseBbox(bbox)
+  if (b) Object.assign(out, b)
+  return out
 }
