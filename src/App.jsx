@@ -11,12 +11,14 @@ import NotFound from './pages/NotFound'
 import Properties from './pages/Properties'
 import PropertyDetail from './pages/PropertyDetail'
 import Register from './pages/Register'
+import Compare from './pages/Compare'
 
 // Admin va sotuvchi sahifalari alohida yuklanadi: oddiy tashrif buyuruvchi ularni yuklamaydi
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
 const AdminModeration = lazy(() => import('./pages/admin/AdminModeration'))
+const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const PropertyEditor = lazy(() => import('./pages/PropertyEditor'))
@@ -28,6 +30,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="properties" element={<Properties />} />
         <Route path="properties/:id" element={<PropertyDetail />} />
+        <Route path="compare" element={<Compare />} />
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route
@@ -81,6 +84,7 @@ export default function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="moderation" element={<AdminModeration />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="reports" element={<AdminReports />} />
           <Route path="users" element={<AdminUsers />} />
         </Route>
         <Route path="*" element={<NotFound />} />

@@ -1,6 +1,7 @@
 import { motion, useReducedMotion } from 'framer-motion'
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useCompareIds } from '../lib/compare'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { initials } from '../lib/format'
@@ -43,7 +44,7 @@ function UserMenu() {
         <Link to="/dashboard">Mening e'lonlarim</Link>
         <Link to="/dashboard/new">E'lon joylash</Link>
         <Link to="/favorites">Saqlanganlar</Link>
-        <Link to="/inquiries">Murojaatlarim</Link>
+        <Link to="/inquiries">Murojaatlar</Link>
         <button type="button" onClick={logout}>
           Chiqish
         </button>
@@ -85,6 +86,7 @@ function useHeaderState() {
 function Header() {
   const { user, ready } = useAuth()
   const { ids } = useFavorites()
+  const compareIds = useCompareIds()
   const { scrolled, hidden } = useHeaderState()
 
   return (
@@ -95,6 +97,12 @@ function Header() {
           <NavLink to="/properties" end={false}>
             E'lonlar
           </NavLink>
+          {compareIds.length > 0 ? (
+            <NavLink to="/compare" className="header__fav">
+              <span>Taqqoslash</span>
+              <span className="count">{compareIds.length}</span>
+            </NavLink>
+          ) : null}
           <NavLink to="/favorites" className="header__fav">
             <HeartIcon size={18} />
             <span>Saqlanganlar</span>

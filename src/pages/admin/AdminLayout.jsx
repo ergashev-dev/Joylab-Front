@@ -4,6 +4,7 @@ import { usePageTitle } from '../../hooks/usePageTitle'
 const LINKS = [
   { to: '/admin', label: 'Boshqaruv', end: true },
   { to: '/admin/moderation', label: 'Moderatsiya' },
+  { to: '/admin/reports', label: 'Shikoyatlar' },
   { to: '/admin/categories', label: 'Kategoriyalar' },
   { to: '/admin/users', label: 'Foydalanuvchilar' },
 ]

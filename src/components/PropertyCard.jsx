@@ -1,7 +1,8 @@
 import { motion, useReducedMotion, useSpring } from 'framer-motion'
 import { Children, cloneElement, isValidElement } from 'react'
 import { Link } from 'react-router-dom'
-import { LISTING_TYPES } from '../config'
+import { LISTING_TYPES, closedLabel } from '../config'
+import CompareButton from './CompareButton'
 import { formatNumber, formatPrice, imageSrc } from '../lib/format'
 import { EASE_OUT } from '../motion/ease'
 import { AreaIcon, ArrowUpRightIcon, BathIcon, BedIcon, PinIcon } from './Icons'
@@ -11,7 +12,7 @@ import Placeholder from './Placeholder'
 const SPRING = { stiffness: 260, damping: 22, mass: 0.5 }
 
 export default function PropertyCard({ property, showHeart = true, index = 0 }) {
-  const { id, title, price, currency, listingType, city, area, rooms, bathrooms, images, category } = property
+  const { id, title, price, currency, listingType, city, area, rooms, bathrooms, images, category, closedAt } = property
   const src = imageSrc(images?.[0]?.url)
   const href = `/properties/${id}`
   const reduce = useReducedMotion()
@@ -37,7 +38,7 @@ export default function PropertyCard({ property, showHeart = true, index = 0 }) 
 
   return (
     <motion.article
-      className="card"
+      className={`card ${closedAt ? 'card--closed' : ''}`}
       initial={reduce ? false : { opacity: 0, y: 48, scale: 0.96 }}
       whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: true, margin: '0px 0px -8% 0px' }}
@@ -54,6 +55,7 @@ export default function PropertyCard({ property, showHeart = true, index = 0 }) 
         </span>
       </Link>
       <span className={`badge badge--${listingType === 'RENT' ? 'rent' : 'sale'}`}>{LISTING_TYPES[listingType] || listingType}</span>
+      {closedAt ? <span className="card__closed">{closedLabel(listingType)}</span> : null}
       {showHeart ? <HeartButton propertyId={id} className="card__heart" /> : null}
 
       <Link to={href} className="card__body">
@@ -75,6 +77,7 @@ export default function PropertyCard({ property, showHeart = true, index = 0 }) 
           {category?.name ? <span className="card__cat">{category.name}</span> : null}
         </span>
       </Link>
+      {showHeart ? <CompareButton propertyId={id} className="card__cmp" /> : null}
     </motion.article>
   )
 }

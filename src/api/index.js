@@ -38,4 +38,13 @@ export const api = {
 
   sendInquiry: (propertyId, body) => request(`/properties/${propertyId}/inquiries`, { method: 'POST', body }),
   myInquiries: (signal) => request('/inquiries/my', { signal }),
+  receivedInquiries: (query, signal) => request('/inquiries/received', { query, signal }),
+  markInquiryRead: (id) => request(`/inquiries/${id}/read`, { method: 'PATCH' }),
+
+  similar: (id, signal) => request(`/properties/${id}/similar`, { signal, auth: false }),
+  setClosed: (id, closed) => request(`/properties/${id}/closed`, { method: 'PATCH', body: { closed } }),
+  renewProperty: (id) => request(`/properties/${id}/renew`, { method: 'POST' }),
+  reportProperty: (id, body) => request(`/properties/${id}/report`, { method: 'POST', body }),
+  adminReports: (signal) => request('/admin/reports', { signal }),
+  adminResolveReport: (id) => request(`/admin/reports/${id}/resolve`, { method: 'PATCH' }),
 }

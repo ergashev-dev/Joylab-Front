@@ -1,6 +1,7 @@
 import { SORT_OPTIONS } from '../config'
 
 export const EMPTY_FILTERS = {
+  q: '',
   city: '',
   type: '',
   category: '',
@@ -21,6 +22,7 @@ export function filtersFromParams(sp) {
   const type = get('type')
   const sort = get('sort')
   return {
+    q: get('q').slice(0, 100),
     city: get('city'),
     type: type === 'SALE' || type === 'RENT' ? type : '',
     category: /^[a-z0-9-]+$/.test(get('category')) ? get('category') : '',
@@ -54,5 +56,5 @@ export function priceRangeInvalid(f) {
 }
 
 export function activeFilterCount(f) {
-  return ['city', 'type', 'category', 'minPrice', 'maxPrice', 'rooms'].filter((k) => f[k] !== '').length
+  return ['q', 'city', 'type', 'category', 'minPrice', 'maxPrice', 'rooms'].filter((k) => f[k] !== '').length
 }

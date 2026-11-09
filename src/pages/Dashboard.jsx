@@ -5,7 +5,7 @@ import { errorText } from '../api/client'
 import ConfirmDialog from '../components/ConfirmDialog'
 import Placeholder from '../components/Placeholder'
 import { EmptyState, ErrorState, Spinner } from '../components/States'
-import { LISTING_TYPES, STATUS } from '../config'
+import { LISTING_TYPES, STATUS, closedLabel } from '../config'
 import { useToast } from '../context/ToastContext'
 import { useAsync } from '../hooks/useAsync'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -37,6 +37,26 @@ export default function Dashboard() {
     return c
   }, [items])
   const visible = filter ? items.filter((p) => p.status === filter) : items
+
+  async function toggleClosed(p) {
+    try {
+      await api.setClosed(p.id, !p.closedAt)
+      push(p.closedAt ? "E'lon qayta faollashtirildi" : `E'lon «${closedLabel(p.listingType).toLowerCase()}» deb belgilandi`, 'success')
+      reload()
+    } catch (err) {
+      push(errorText(err), 'error')
+    }
+  }
+
+  async function renew(p) {
+    try {
+      await api.renewProperty(p.id)
+      push("E'lon muddati 60 kunga uzaytirildi", 'success')
+      reload()
+    } catch (err) {
+      push(errorText(err), 'error')
+    }
+  }
 
   async function confirmDelete() {
     if (!toDelete) return
@@ -132,7 +152,22 @@ export default function Dashboard() {
                       <p className="muted">
                         {p.city}, {p.rooms} xona, {formatNumber(p.area)} m², {p.images?.length || 0} ta rasm. Joylangan: {formatDate(p.createdAt)}
                       </p>
-                      {p.status !== 'APPROVED' ? <p className="myitem__hint">{STATUS[p.status]?.hint}</p> : null}
+                      {p.status === 'REJECTED' && p.rejectReason ? (
+                        <p className="notice notice--error">Rad etish sababi: {p.rejectReason}</p>
+                      ) : p.status !== 'APPROVED' ? (
+                        <p className="myitem__hint">{STATUS[p.status]?.hint}</p>
+                      ) : null}
+                      {p.closedAt ? <p className="myitem__hint">{closedLabel(p.listingType)}: saytda kulrang nishon bilan ko'rinadi.</p> : null}
+                      {p.expiresAt ? (
+                        <p className={`muted ${new Date(p.expiresAt) < new Date() ? 'is-expired' : ''}`}>
+                          {new Date(p.expiresAt) < new Date() ? 'Muddati tugagan' : `Amal qilish muddati: ${formatDate(p.expiresAt)}`}
+                        </p>
+                      ) : null}
+                      {p.status === 'APPROVED' ? (
+                        <p className="muted">
+                          {p.viewCount ?? 0} ko'rish · {p._count?.favorites ?? 0} saqlash · {p._count?.inquiries ?? 0} murojaat
+                        </p>
+                      ) : null}
                     </div>
 
                     <div className="myitem__actions">
@@ -140,6 +175,16 @@ export default function Dashboard() {
                         <Link className="btn btn--ghost btn--sm" to={`/properties/${p.id}`}>
                           Ko'rish
                         </Link>
+                      ) : null}
+                      {live ? (
+                        <>
+                          <button type="button" className="btn btn--ghost btn--sm" onClick={() => toggleClosed(p)}>
+                            {p.closedAt ? 'Qayta ochish' : closedLabel(p.listingType) + ' deb belgilash'}
+                          </button>
+                          <button type="button" className="btn btn--ghost btn--sm" onClick={() => renew(p)}>
+                            Muddatni uzaytirish
+                          </button>
+                        </>
                       ) : null}
                       <Link className="btn btn--ghost btn--sm" to={`/dashboard/${p.id}/edit`}>
                         Tahrirlash

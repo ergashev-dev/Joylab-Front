@@ -28,7 +28,20 @@ export const SORT_OPTIONS = [
   { value: '', label: 'Yangilari birinchi' },
   { value: 'price_asc', label: 'Arzonlari birinchi' },
   { value: 'price_desc', label: 'Qimmatlari birinchi' },
+  { value: 'area_desc', label: 'Maydoni katta' },
+  { value: 'area_asc', label: 'Maydoni kichik' },
+  { value: 'popular', label: "Ko'p ko'rilgan" },
 ]
+
+export const REPORT_REASONS = [
+  { value: 'SPAM', label: 'Spam yoki reklama' },
+  { value: 'WRONG_INFO', label: "Ma'lumotlar noto'g'ri" },
+  { value: 'SOLD', label: 'Allaqachon sotilgan / ijaraga berilgan' },
+  { value: 'SCAM', label: 'Firibgarlikka o\'xshaydi' },
+  { value: 'OTHER', label: 'Boshqa sabab' },
+]
+
+export const closedLabel = (listingType) => (listingType === 'RENT' ? 'Ijaraga berilgan' : 'Sotilgan')
 
 export const CITY_SUGGESTIONS = [
   'Toshkent',

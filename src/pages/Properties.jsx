@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { api } from '../api'
 import FilterForm from '../components/FilterForm'
@@ -13,6 +13,19 @@ import { useCategories } from '../hooks/useCategories'
 import { useMediaQuery } from '../hooks/useMediaQuery'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { activeFilterCount, filtersFromParams, pageFromParams, paramsFromFilters } from '../lib/filters'
+import { formatNumber } from '../lib/format'
+
+function chipsFor(f, categories) {
+  const out = []
+  if (f.q) out.push({ key: 'q', label: `«${f.q}»` })
+  if (f.city) out.push({ key: 'city', label: f.city })
+  if (f.type) out.push({ key: 'type', label: f.type === 'RENT' ? 'Ijara' : 'Sotuv' })
+  if (f.category) out.push({ key: 'category', label: categories?.find((c) => c.slug === f.category)?.name || f.category })
+  if (f.rooms) out.push({ key: 'rooms', label: `${f.rooms} xona` })
+  if (f.minPrice) out.push({ key: 'minPrice', label: `dan ${formatNumber(f.minPrice)}` })
+  if (f.maxPrice) out.push({ key: 'maxPrice', label: `gacha ${formatNumber(f.maxPrice)}` })
+  return out
+}
 
 export default function Properties() {
   usePageTitle("E'lonlar")
@@ -44,6 +57,16 @@ export default function Properties() {
     window.scrollTo({ top: 0 })
   }
 
+  const [qDraft, setQDraft] = useState(filters.q)
+  useEffect(() => setQDraft(filters.q), [filters.q])
+  useEffect(() => {
+    if (qDraft === filters.q) return undefined
+    const t = setTimeout(() => applyFilters({ ...filters, q: qDraft }), 450)
+    return () => clearTimeout(t)
+  }, [qDraft]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const chips = chipsFor(filters, categories)
+
   const items = data?.data || []
   const meta = data?.meta
   const activeCount = activeFilterCount(filters)
@@ -66,6 +89,28 @@ export default function Properties() {
         ) : null}
 
         <div className="listing__main">
+          <div className="searchbar">
+            <label htmlFor="q" className="sr-only">
+              Qidiruv
+            </label>
+            <input
+              id="q"
+              type="search"
+              placeholder="Sarlavha, manzil yoki tavsif bo'yicha qidirish…"
+              value={qDraft}
+              maxLength={100}
+              onChange={(e) => setQDraft(e.target.value)}
+            />
+          </div>
+          {chips.length > 0 ? (
+            <div className="activechips" aria-label="Tanlangan filtrlar">
+              {chips.map((c) => (
+                <button key={c.key} type="button" className="chip chip--active" onClick={() => applyFilters({ ...filters, [c.key]: '' })} aria-label={`${c.label} filtrini o'chirish`}>
+                  {c.label} <span aria-hidden="true">×</span>
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="toolbar">
             {!isDesktop ? (
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => sheet.current?.showModal()}>
@@ -98,7 +143,7 @@ export default function Properties() {
                 title="Mos e'lon topilmadi"
                 text="Filtrlarni kengaytirib ko'ring: narx oralig'i yoki xonalar sonini o'zgartiring."
                 action={
-                  <button type="button" className="btn btn--primary" onClick={() => applyFilters({ ...filters, city: '', type: '', category: '', minPrice: '', maxPrice: '', rooms: '' })}>
+                  <button type="button" className="btn btn--primary" onClick={() => applyFilters({ ...filters, q: '', city: '', type: '', category: '', minPrice: '', maxPrice: '', rooms: '' })}>
                     Filtrlarni tozalash
                   </button>
                 }
