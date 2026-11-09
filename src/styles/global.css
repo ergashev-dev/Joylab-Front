@@ -4057,3 +4057,31 @@ a.miniitem:hover {
 .mapnote { margin: 8px 0; }
 .verifybanner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 10px 16px; background: #fff4d6; color: #5c4400; font-size: 14px; }
 .verifybanner .linkbtn { color: inherit; opacity: 1; font-weight: 600; }
+
+/* ===== Panellar ===== */
+.bulkbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 12px; border-radius: 12px; background: #e6f2f3; }
+.myitem__check { align-self: center; width: 18px; height: 18px; margin-right: 8px; }
+.account { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: start; }
+.account__nav { display: grid; gap: 4px; position: sticky; top: 90px; }
+.account__link { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 10px; color: inherit; text-decoration: none; }
+.account__link:hover { background: rgba(6,86,94,.08); }
+.account__link.active { background: #06565e; color: #fff; }
+.account__body { min-width: 0; }
+@media (max-width: 800px) { .account { grid-template-columns: 1fr; } .account__nav { position: static; grid-auto-flow: column; overflow-x: auto; } .account__link { white-space: nowrap; } }
+.card-block { padding: 20px; border: 1px solid var(--line, #e1e1e1); border-radius: 14px; margin-bottom: 20px; display: grid; gap: 12px; }
+.card-block h2 { margin: 0; font-size: 18px; }
+.notif { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.notif li { padding: 12px 14px; border: 1px solid var(--line, #e1e1e1); border-radius: 12px; }
+.notif li.is-unread { border-left: 4px solid #06565e; background: #f3f9f9; }
+.chart { width: 100%; height: 80px; display: block; }
+.chart__bar { fill: #06565e; opacity: .85; }
+.chart__bar:hover { opacity: 1; }
+.statgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0; }
+.userrow { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 12px 0; border-bottom: 1px solid var(--line, #e1e1e1); }
+.userrow__meta { grid-column: 1 / -1; font-size: 13px; }
+.badge-soft { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; background: #eee; margin-right: 6px; }
+.badge-soft--ok { background: #dff3e4; }
+.badge-soft--bad { background: #fde2e0; }
+.account__body .container { padding-left: 0; padding-right: 0; max-width: none; }
+.avatar { position: relative; }
+.avatar__dot { position: absolute; top: -2px; right: -2px; width: 10px; height: 10px; border-radius: 50%; background: #e5484d; border: 2px solid #fff; }

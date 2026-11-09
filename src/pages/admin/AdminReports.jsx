@@ -21,6 +21,16 @@ export default function AdminReports() {
     }
   }
 
+  async function act(fn, id, okText) {
+    try {
+      await fn(id)
+      push(okText, 'success')
+      reload()
+    } catch (err) {
+      push(errorText(err), 'error')
+    }
+  }
+
   if (loading && !data) return <Spinner />
   if (error && !data) return <ErrorState error={error} onRetry={reload} />
   const items = data || []
@@ -44,6 +54,12 @@ export default function AdminReports() {
                   {r.reporter?.fullName} ({r.reporter?.email}), {formatDate(r.createdAt)}
                 </p>
                 <p className="inqitem__actions">
+                  <button type="button" className="btn btn--ghost btn--sm btn--text-danger" onClick={() => act(api.adminHideReported, r.id, "E'lon yashirildi")}>
+                    E'lonni yashirish
+                  </button>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={() => act(api.adminWarnOwner, r.id, 'Sotuvchi ogohlantirildi')}>
+                    Sotuvchini ogohlantirish
+                  </button>
                   <button type="button" className="btn btn--ghost btn--sm" onClick={() => resolve(r.id)}>
                     Yopish
                   </button>

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import BarChart from '../components/BarChart'
+import { formFromProperty, saveDraft } from '../lib/propertyForm'
 import { api } from '../api'
 import { errorText } from '../api/client'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -26,6 +28,9 @@ export default function Dashboard() {
   usePageTitle("Mening e'lonlarim")
   const { push } = useToast()
   const { data, error, loading, reload } = useAsync((signal) => api.myProperties(signal), [])
+  const navigate = useNavigate()
+  const [statsFor, setStatsFor] = useState(null)
+  const [stats, setStats] = useState(null)
   const [filter, setFilter] = useState('')
   const [toDelete, setToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
@@ -37,6 +42,37 @@ export default function Dashboard() {
     return c
   }, [items])
   const visible = filter ? items.filter((p) => p.status === filter) : items
+
+  // Nusxa: ma'lumotlar qoralama sifatida yangi e'lon formasiga ko'chadi (rasmlar qayta yuklanadi)
+  function duplicate(p) {
+    saveDraft(formFromProperty(p))
+    navigate('/dashboard/new')
+  }
+
+  async function share(p) {
+    const url = `${window.location.origin}/properties/${p.id}`
+    try {
+      if (navigator.share) await navigator.share({ title: p.title, url })
+      else {
+        await navigator.clipboard.writeText(url)
+        push('Havola nusxalandi', 'success')
+      }
+    } catch {
+      /* foydalanuvchi bekor qildi */
+    }
+  }
+
+  async function toggleStats(p) {
+    if (statsFor === p.id) return setStatsFor(null)
+    setStatsFor(p.id)
+    setStats(null)
+    try {
+      setStats(await api.propertyStats(p.id))
+    } catch (err) {
+      push(errorText(err), 'error')
+      setStatsFor(null)
+    }
+  }
 
   async function toggleClosed(p) {
     try {
@@ -168,6 +204,13 @@ export default function Dashboard() {
                           {p.viewCount ?? 0} ko'rish · {p._count?.favorites ?? 0} saqlash · {p._count?.inquiries ?? 0} murojaat
                         </p>
                       ) : null}
+                      {statsFor === p.id ? (
+                        stats ? (
+                          <BarChart data={stats.views} label="Kunlik ko'rishlar" />
+                        ) : (
+                          <p className="muted">Yuklanmoqda…</p>
+                        )
+                      ) : null}
                     </div>
 
                     <div className="myitem__actions">
@@ -186,8 +229,21 @@ export default function Dashboard() {
                           </button>
                         </>
                       ) : null}
-                      <Link className="btn btn--ghost btn--sm" to={`/dashboard/${p.id}/edit`}>
-                        Tahrirlash
+                      {live ? (
+                        <>
+                          <button type="button" className="btn btn--ghost btn--sm" onClick={() => toggleStats(p)}>
+                            {statsFor === p.id ? 'Statistikani yopish' : 'Statistika'}
+                          </button>
+                          <button type="button" className="btn btn--ghost btn--sm" onClick={() => share(p)}>
+                            Ulashish
+                          </button>
+                        </>
+                      ) : null}
+                      <button type="button" className="btn btn--ghost btn--sm" onClick={() => duplicate(p)}>
+                        Nusxa
+                      </button>
+                      <Link className={`btn btn--sm ${p.status === 'REJECTED' ? 'btn--primary' : 'btn--ghost'}`} to={`/dashboard/${p.id}/edit`}>
+                        {p.status === 'REJECTED' ? 'Tuzatib qayta yuborish' : 'Tahrirlash'}
                       </Link>
                       <button type="button" className="btn btn--ghost btn--sm btn--text-danger" onClick={() => setToDelete(p)}>
                         O'chirish

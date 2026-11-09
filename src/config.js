@@ -58,3 +58,11 @@ export const CITY_SUGGESTIONS = [
   'Termiz',
   'Guliston',
 ]
+
+export const REJECT_TEMPLATES = [
+  "Rasmlar sifatsiz yoki e'londa aks etmaydi",
+  "Narx noto'g'ri yoki real emas",
+  "Takroriy e'lon: bunday e'lon allaqachon bor",
+  "Ma'lumotlar to'liq emas: tavsif va manzilni aniqlashtiring",
+  "Taqiqlangan kontent yoki reklama",
+]

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
+import BarChart from '../../components/BarChart'
 import CountUp from '../../components/CountUp'
 import { ArrowUpRightIcon } from '../../components/Icons'
 import Placeholder from '../../components/Placeholder'
@@ -34,6 +35,7 @@ async function load(signal) {
 
 export default function AdminDashboard() {
   const { data, error, loading, reload } = useAsync(load, [])
+  const { data: stats } = useAsync((signal) => api.adminStats(signal), [])
 
   if (error) return <ErrorState error={error} onRetry={reload} />
 
@@ -64,6 +66,35 @@ export default function AdminDashboard() {
           {!loading && data.categories.length === 0 ? <span className="stat__sub stat__sub--warn">Hali yo'q, qo'shing</span> : null}
         </Link>
       </div>
+
+      <section className="panel">
+        <div className="panel__head">
+          <h2>Oxirgi 30 kun</h2>
+        </div>
+        {!stats ? (
+          <p className="muted">Yuklanmoqda…</p>
+        ) : (
+          <>
+            <div className="statgrid">
+              <BarChart data={stats.properties} label="Yangi e'lonlar" />
+              <BarChart data={stats.users} label="Ro'yxatdan o'tganlar" />
+              <BarChart data={stats.inquiries} label="Murojaatlar" />
+            </div>
+            {stats.topViewed?.length ? (
+              <>
+                <h3>Eng ko'p ko'rilgan e'lonlar</h3>
+                <ol>
+                  {stats.topViewed.map((p) => (
+                    <li key={p.id}>
+                      <Link to={`/properties/${p.id}`}>{p.title}</Link> <span className="muted">({p.city}, {p.viewCount} ko'rish)</span>
+                    </li>
+                  ))}
+                </ol>
+              </>
+            ) : null}
+          </>
+        )}
+      </section>
 
       <section className="panel">
         <div className="panel__head">

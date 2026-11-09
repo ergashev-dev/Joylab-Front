@@ -6,7 +6,7 @@ import { CloseIcon } from '../../components/Icons'
 import Pagination from '../../components/Pagination'
 import Placeholder from '../../components/Placeholder'
 import { EmptyState, ErrorState } from '../../components/States'
-import { LISTING_TYPES, STATUS } from '../../config'
+import { LISTING_TYPES, REJECT_TEMPLATES, STATUS } from '../../config'
 import { useToast } from '../../context/ToastContext'
 import { useAsync } from '../../hooks/useAsync'
 import { formatDate, formatNumber, formatPrice, imageSrc } from '../../lib/format'
@@ -19,7 +19,57 @@ const FILTERS = [
 ]
 const LIMIT = 10
 
-function ReviewDialog({ property, busy, onClose, onDecide }) {
+function RejectDialog({ target, busy, onClose, onConfirm }) {
+  const ref = useRef(null)
+  const [reason, setReason] = useState('')
+
+  useEffect(() => {
+    const d = ref.current
+    if (!d) return
+    if (target && !d.open) {
+      setReason('')
+      d.showModal()
+    }
+    if (!target && d.open) d.close()
+  }, [target])
+
+  const valid = reason.trim().length >= 3 && reason.trim().length <= 500
+  return (
+    <dialog ref={ref} className="reportdlg" onCancel={(e) => { e.preventDefault(); if (!busy) onClose() }}>
+      <form
+        className="reportdlg__form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (valid) onConfirm(reason.trim())
+        }}
+      >
+        <h2>Rad etish sababi</h2>
+        <p className="muted">{target?.count > 1 ? `${target.count} ta e'lon uchun` : 'Sotuvchi sababni ko\'radi va tuzatib qayta yuboradi.'}</p>
+        <div className="activechips">
+          {REJECT_TEMPLATES.map((t) => (
+            <button key={t} type="button" className="chip" onClick={() => setReason(t)}>
+              <span>{t}</span>
+            </button>
+          ))}
+        </div>
+        <div className="field">
+          <label htmlFor="rej-reason">Sabab</label>
+          <textarea id="rej-reason" rows={3} maxLength={500} value={reason} onChange={(e) => setReason(e.target.value)} autoFocus />
+        </div>
+        <div className="reportdlg__actions">
+          <button type="button" className="btn btn--ghost" onClick={onClose} disabled={busy}>
+            Bekor qilish
+          </button>
+          <button type="submit" className="btn btn--primary" disabled={!valid || busy}>
+            {busy ? 'Yuborilmoqda…' : 'Rad etish'}
+          </button>
+        </div>
+      </form>
+    </dialog>
+  )
+}
+
+function ReviewDialog({ property, busy, onClose, onDecide, onNav }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -88,6 +138,7 @@ function ReviewDialog({ property, busy, onClose, onDecide }) {
               </div>
             </dl>
             <p className="review__desc">{p.description}</p>
+            <p className="muted">Tugmalar: A tasdiqlash · R rad etish · J/← oldingi · K/→ keyingi</p>
             <div className="review__actions">
               <button type="button" className="btn btn--primary" disabled={busy || p.status === 'APPROVED'} onClick={() => onDecide(p, 'APPROVED')}>
                 Tasdiqlash
@@ -117,6 +168,9 @@ export default function AdminModeration() {
   )
   const [selected, setSelected] = useState(null)
   const [busyId, setBusyId] = useState(null)
+  const [checked, setChecked] = useState(() => new Set())
+  const [rejectTarget, setRejectTarget] = useState(null) // { ids, count, after }
+  const [rejectBusy, setRejectBusy] = useState(false)
 
   const items = data?.data || []
   const meta = data?.meta
@@ -145,11 +199,15 @@ export default function AdminModeration() {
   }
 
   async function decide(property, newStatus) {
+    if (newStatus === 'REJECTED') {
+      setRejectTarget({ ids: [property.id], count: 1 })
+      return
+    }
     setBusyId(property.id)
     try {
       await api.adminSetStatus(property.id, newStatus)
-      push(newStatus === 'APPROVED' ? "E'lon tasdiqlandi" : "E'lon rad etildi", 'success')
-      closeReview()
+      push("E'lon tasdiqlandi", 'success')
+      advance(property)
       reload()
     } catch (err) {
       push(errorText(err), 'error')
@@ -157,6 +215,79 @@ export default function AdminModeration() {
       setBusyId(null)
     }
   }
+
+  // Tasdiqlangach keyingi e'longa o'tamiz (navbatni tez tozalash uchun)
+  function advance(property) {
+    const i = items.findIndex((x) => x.id === property.id)
+    const next = items[i + 1] || items[i - 1]
+    if (selected && next && next.id !== property.id) setSelected(next)
+    else closeReview()
+  }
+
+  function nav(delta) {
+    if (!selected) return
+    const i = items.findIndex((x) => x.id === selected.id)
+    const next = items[i + delta]
+    if (next) setSelected(next)
+  }
+
+  async function confirmReject(reason) {
+    setRejectBusy(true)
+    try {
+      if (rejectTarget.ids.length === 1) await api.adminSetStatus(rejectTarget.ids[0], 'REJECTED', reason)
+      else await api.adminBulkStatus(rejectTarget.ids, 'REJECTED', reason)
+      push(rejectTarget.ids.length > 1 ? `${rejectTarget.ids.length} ta e'lon rad etildi` : "E'lon rad etildi", 'success')
+      const one = items.find((x) => x.id === rejectTarget.ids[0])
+      setRejectTarget(null)
+      setChecked(new Set())
+      if (rejectTarget.ids.length === 1 && one) advance(one)
+      reload()
+    } catch (err) {
+      push(errorText(err), 'error')
+    } finally {
+      setRejectBusy(false)
+    }
+  }
+
+  async function bulkApprove() {
+    const ids = [...checked]
+    setBusyId(-1)
+    try {
+      const res = await api.adminBulkStatus(ids, 'APPROVED')
+      push(`${res.done} ta e'lon tasdiqlandi`, 'success')
+      setChecked(new Set())
+      reload()
+    } catch (err) {
+      push(errorText(err), 'error')
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  function toggleChecked(id) {
+    setChecked((s) => {
+      const n = new Set(s)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
+  }
+
+  // Klaviatura: A, R, J/K yoki o'qlar (faqat ko'rib chiqish oynasi ochiq va matn yozilmayotganda)
+  useEffect(() => {
+    if (!selected || rejectTarget) return undefined
+    function onKey(e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return
+      const k = e.key.toLowerCase()
+      if (k === 'a' && selected.status !== 'APPROVED' && busyId === null) decide(selected, 'APPROVED')
+      else if (k === 'r' && selected.status !== 'REJECTED') decide(selected, 'REJECTED')
+      else if (k === 'k' || k === 'arrowright') nav(1)
+      else if (k === 'j' || k === 'arrowleft') nav(-1)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <>
@@ -181,9 +312,29 @@ export default function AdminModeration() {
       ) : items.length === 0 ? (
         <EmptyState title={status === 'PENDING' ? "Tekshiriladigan e'lon yo'q" : "Bu holatda e'lon yo'q"} text="Yangi e'lonlar shu yerda paydo bo'ladi." />
       ) : (
+        <>
+        {checked.size > 0 ? (
+          <div className="bulkbar" role="region" aria-label="Tanlanganlar">
+            <strong>{checked.size} ta tanlandi</strong>
+            <button type="button" className="btn btn--primary btn--sm" disabled={busyId !== null} onClick={bulkApprove}>
+              Tasdiqlash
+            </button>
+            <button type="button" className="btn btn--ghost btn--sm btn--text-danger" onClick={() => setRejectTarget({ ids: [...checked], count: checked.size })}>
+              Rad etish
+            </button>
+            <button type="button" className="linkbtn" onClick={() => setChecked(new Set())}>
+              Bekor qilish
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="linkbtn" onClick={() => setChecked(new Set(items.filter((p) => p.status !== 'APPROVED').map((p) => p.id)))}>
+            Hammasini tanlash
+          </button>
+        )}
         <ul className={`mylist ${loading ? 'is-loading' : ''}`}>
           {items.map((p) => (
             <li key={p.id} className="myitem myitem--admin">
+              <input type="checkbox" className="myitem__check" checked={checked.has(p.id)} onChange={() => toggleChecked(p.id)} aria-label={`${p.title} ni tanlash`} />
               <div className="myitem__thumb" aria-hidden="true">
                 {p.images?.[0] ? <img src={imageSrc(p.images[0].url)} alt="" loading="lazy" /> : <Placeholder />}
               </div>
@@ -218,6 +369,7 @@ export default function AdminModeration() {
             </li>
           ))}
         </ul>
+        </>
       )}
 
       <Pagination
@@ -231,7 +383,8 @@ export default function AdminModeration() {
         }}
       />
 
-      <ReviewDialog property={selected} busy={busyId === selected?.id} onClose={closeReview} onDecide={decide} />
+      <ReviewDialog property={selected} busy={busyId === selected?.id} onClose={closeReview} onDecide={decide} onNav={nav} />
+      <RejectDialog target={rejectTarget} busy={rejectBusy} onClose={() => setRejectTarget(null)} onConfirm={confirmReject} />
     </>
   )
 }

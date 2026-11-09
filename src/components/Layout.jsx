@@ -3,6 +3,7 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useCompareIds } from '../lib/compare'
 import VerifyBanner from './VerifyBanner'
+import { useUnread } from '../hooks/useUnread'
 import { useAuth } from '../context/AuthContext'
 import { useFavorites } from '../context/FavoritesContext'
 import { initials } from '../lib/format'
@@ -15,6 +16,7 @@ import { Spinner } from './States'
 import Logo from './Logo'
 
 function UserMenu() {
+  const unread = useUnread()
   const { user, logout } = useAuth()
   const ref = useRef(null)
   const location = useLocation()
@@ -36,7 +38,7 @@ function UserMenu() {
   return (
     <details className="usermenu" ref={ref}>
       <summary className="usermenu__trigger" aria-label="Profil menyusi">
-        <span className="avatar">{initials(user.fullName)}</span>
+        <span className="avatar">{initials(user.fullName)}{unread > 0 ? <span className="avatar__dot" aria-label={`${unread} ta o'qilmagan`} /> : null}</span>
         <span className="usermenu__name">{user.fullName}</span>
       </summary>
       <div className="usermenu__panel">
@@ -46,6 +48,10 @@ function UserMenu() {
         <Link to="/dashboard/new">E'lon joylash</Link>
         <Link to="/favorites">Saqlanganlar</Link>
         <Link to="/inquiries">Murojaatlar</Link>
+        <Link to="/notifications">
+          Bildirishnomalar{unread > 0 ? ` (${unread})` : ''}
+        </Link>
+        <Link to="/profile">Profil</Link>
         <button type="button" onClick={logout}>
           Chiqish
         </button>

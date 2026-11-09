@@ -27,7 +27,25 @@ export const api = {
 
   // Admin
   adminProperties: (query, signal) => request('/admin/properties', { query, signal }),
-  adminSetStatus: (id, status) => request(`/admin/properties/${id}/status`, { method: 'PATCH', body: { status } }),
+  adminSetStatus: (id, status, reason) =>
+    request(`/admin/properties/${id}/status`, { method: 'PATCH', body: status === 'REJECTED' ? { status, reason } : { status } }),
+  adminBulkStatus: (ids, status, reason) =>
+    request('/admin/properties/bulk-status', { method: 'PATCH', body: status === 'REJECTED' ? { ids, status, reason } : { ids, status } }),
+  adminUsersQuery: (query, signal) => request('/admin/users', { query, signal }),
+  adminBlockUser: (id, blocked) => request(`/admin/users/${id}/block`, { method: 'PATCH', body: { blocked } }),
+  adminHideReported: (reportId) => request(`/admin/reports/${reportId}/hide-property`, { method: 'POST' }),
+  adminWarnOwner: (reportId) => request(`/admin/reports/${reportId}/warn-owner`, { method: 'POST' }),
+  adminStats: (signal) => request('/admin/stats', { signal }),
+  adminAudit: (query, signal) => request('/admin/audit', { query, signal }),
+
+  updateMe: (body) => request('/users/me', { method: 'PATCH', body }),
+  changePassword: (body) => request('/users/me/password', { method: 'POST', body }),
+  deleteAccount: (password) => request('/users/me', { method: 'DELETE', body: { password } }),
+  notifications: (signal) => request('/notifications', { signal }),
+  unreadCount: (signal) => request('/notifications/unread-count', { signal }),
+  markNotificationRead: (id) => request(`/notifications/${id}/read`, { method: 'PATCH' }),
+  markAllNotificationsRead: () => request('/notifications/read-all', { method: 'PATCH' }),
+  propertyStats: (id, signal) => request(`/properties/${id}/stats`, { signal }),
   adminUsers: (signal) => request('/admin/users', { signal }),
   adminSetRole: (id, role) => request(`/admin/users/${id}/role`, { method: 'PATCH', body: { role } }),
   createCategory: (body) => request('/categories', { method: 'POST', body }),

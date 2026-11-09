@@ -101,6 +101,14 @@ function Received() {
                   <a className="btn btn--primary btn--sm" href={`tel:${tel}`}>
                     Qo'ng'iroq: {q.phone}
                   </a>
+                  <a className="btn btn--ghost btn--sm" href={`https://t.me/${tel.startsWith('+') ? tel : `+998${tel}`}`} target="_blank" rel="noopener noreferrer">
+                    Telegram
+                  </a>
+                  {q.sender?.email ? (
+                    <a className="btn btn--ghost btn--sm" href={`mailto:${q.sender.email}?subject=${encodeURIComponent(`Re: ${q.property?.title || "E'lon"}`)}`}>
+                      Email
+                    </a>
+                  ) : null}
                   {unread ? (
                     <button type="button" className="btn btn--ghost btn--sm" onClick={() => markRead(q)}>
                       O'qilgan deb belgilash

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-export default function ConfirmDialog({ open, title, text, confirmLabel = 'Ha', tone = 'danger', busyLabel = 'Bajarilmoqda…', busy = false, onConfirm, onCancel }) {
+export default function ConfirmDialog({ open, title, text, confirmLabel = 'Ha', tone = 'danger', busyLabel = 'Bajarilmoqda…', busy = false, onConfirm, onCancel, children }) {
   const ref = useRef(null)
 
   useEffect(() => {
@@ -26,6 +26,7 @@ export default function ConfirmDialog({ open, title, text, confirmLabel = 'Ha', 
       <div className="confirm__body">
         <h2 id="confirm-title">{title}</h2>
         {text ? <p className="muted">{text}</p> : null}
+        {children}
         <div className="confirm__actions">
           <button type="button" className="btn btn--ghost" onClick={onCancel} disabled={busy}>
             Bekor qilish

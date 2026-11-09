@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/admin/reports', label: 'Shikoyatlar' },
   { to: '/admin/categories', label: 'Kategoriyalar' },
   { to: '/admin/users', label: 'Foydalanuvchilar' },
+  { to: '/admin/audit', label: 'Audit jurnali' },
 ]
 
 export default function AdminLayout() {

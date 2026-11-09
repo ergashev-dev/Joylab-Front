@@ -12,6 +12,9 @@ import Properties from './pages/Properties'
 import PropertyDetail from './pages/PropertyDetail'
 import Register from './pages/Register'
 import Compare from './pages/Compare'
+import AccountLayout from './components/AccountLayout'
+import Notifications from './pages/Notifications'
+import Profile from './pages/Profile'
 import VerifyEmail from './pages/VerifyEmail'
 
 // Admin va sotuvchi sahifalari alohida yuklanadi: oddiy tashrif buyuruvchi ularni yuklamaydi
@@ -20,6 +23,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'))
 const AdminModeration = lazy(() => import('./pages/admin/AdminModeration'))
 const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
+const AdminAudit = lazy(() => import('./pages/admin/AdminAudit'))
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const PropertyEditor = lazy(() => import('./pages/PropertyEditor'))
@@ -36,29 +40,39 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
         <Route
-          path="favorites"
           element={
             <RequireAuth>
-              <Favorites />
+              <AccountLayout />
             </RequireAuth>
           }
-        />
-        <Route
-          path="inquiries"
-          element={
-            <RequireAuth>
-              <Inquiries />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="dashboard"
-          element={
-            <RequireAuth>
-              <Dashboard />
-            </RequireAuth>
-          }
-        />
+        >
+          <Route
+            path="favorites"
+            element={
+              <RequireAuth>
+                <Favorites />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="inquiries"
+            element={
+              <RequireAuth>
+                <Inquiries />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route path="notifications" element={<Notifications />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
         <Route
           path="dashboard/new"
           element={
@@ -88,6 +102,7 @@ export default function App() {
           <Route path="categories" element={<AdminCategories />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="audit" element={<AdminAudit />} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
